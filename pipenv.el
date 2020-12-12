@@ -135,12 +135,15 @@
       ;; Interpret ANSI escape sequences from Pipenv
       (ansi-color-apply-on-region (point-min) (point-max)))))
 
+(defvar pipenv-process-response nil)
+
 (defun pipenv--process-filter-variable-insert (process response)
   "Filter for PROCESS, which sets several global variables based on RESPONSE."
   (when (and
          (s-equals? (nth 0 (last (process-command process))) "--venv")
          (f-directory? response))
-    (setq python-shell-virtualenv-root response)))
+    (setq python-shell-virtualenv-root response))
+  (setq pipenv-process-response response))
 
 (defun pipenv--process-filter (process response)
   "Pipenv default filter stack PROCESS and RESPONSE handling."
