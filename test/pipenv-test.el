@@ -36,10 +36,10 @@
   (should (s-contains? "No Pipfile present at project home" pipenv-process-response))
 
   (pipenv--force-wait (pipenv-venv))
-  (should (s-contains? "Aborted!" pipenv-process-response))
+  (should (s-contains? "No virtualenv has been created for this project" pipenv-process-response))
 
   (pipenv--force-wait (pipenv-py))
-  (should (s-contains? "location not created nor specified" pipenv-process-response))
+  (should (s-contains? "No virtualenv has been created for this project" pipenv-process-response))
 
   (should (eq nil python-shell-virtualenv-path))
   (should (eq nil python-shell-virtualenv-root))
@@ -51,6 +51,7 @@
 
 (ert-deftest pipenv-behavior-with-new-project ()
 
+  (f-delete new-project 1)
   (f-mkdir new-project)
   (cd new-project)
 
@@ -75,14 +76,16 @@
 
   (let ((venv-executables (pipenv--get-executables-dir)))
     (should (member venv-executables exec-path))
-    (should (not (executable-find "ipython")))
-    (pipenv--force-wait (pipenv-install "ipython"))
-    (should (executable-find "ipython"))
-    (should (s-contains? venv-executables (executable-find "ipython")))
-    (should (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8)))
-    (pipenv--force-wait (pipenv-uninstall "ipython"))
-    (should (not (executable-find "ipython")))
-    (should (not (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8)))))
+    (if (executable-find "ipython")
+        (warn "[pipenv-behavior-with-existing-project] ipython is installed at global.  Skip some of test.")
+      (should (not (executable-find "ipython")))
+      (pipenv--force-wait (pipenv-install "ipython"))
+      (should (executable-find "ipython"))
+      (should (s-contains? venv-executables (executable-find "ipython")))
+      (should (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8)))
+      (pipenv--force-wait (pipenv-uninstall "ipython"))
+      (should (not (executable-find "ipython")))
+      (should (not (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8))))))
 
   (pipenv-deactivate)
   (should-not (python-from-venv? new-project))
@@ -116,14 +119,16 @@
 
   (let ((venv-executables (pipenv--get-executables-dir)))
     (should (member venv-executables exec-path))
-    (should (not (executable-find "ipython")))
-    (pipenv--force-wait (pipenv-install "ipython"))
-    (should (executable-find "ipython"))
-    (should (s-contains? venv-executables (executable-find "ipython")))
-    (should (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8)))
-    (pipenv--force-wait (pipenv-uninstall "ipython"))
-    (should (not (executable-find "ipython")))
-    (should (not (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8)))))
+    (if (executable-find "ipython")
+        (warn "[pipenv-behavior-with-existing-project] ipython is installed at global.  Skip some of test.")
+      (should (not (executable-find "ipython")))
+      (pipenv--force-wait (pipenv-install "ipython"))
+      (should (executable-find "ipython"))
+      (should (s-contains? venv-executables (executable-find "ipython")))
+      (should (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8)))
+      (pipenv--force-wait (pipenv-uninstall "ipython"))
+      (should (not (executable-find "ipython")))
+      (should (not (s-contains? "ipython" (f-read-text "Pipfile" 'utf-8))))))
 
   (pipenv-deactivate)
   (should-not (python-from-venv? existing-project))
@@ -141,7 +146,8 @@
   (flycheck-mode)
 
   ;; if flake8 installed global, we cannot this test suite.
-  (unless (flycheck-may-use-checker 'python-flake8)
+  (if (flycheck-may-use-checker 'python-flake8)
+      (warn "[flycheck-integration] flake8 is installed at global.  Skip some of test.")
     (should-not (flycheck-may-use-checker 'python-flake8))
     (pipenv-activate)
     (should-not (flycheck-disabled-checker-p 'python-flake8))
