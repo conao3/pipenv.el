@@ -1,11 +1,10 @@
 ;; Test suite for pipenv.el
 
+(require 'pipenv)
 (require 'ert)
 (require 'f)
 (require 's)
 (require 'flycheck)
-
-(load (f-expand "pipenv.el" default-directory))
 
 (defvar existing-project (f-expand "existing-project" default-directory))
 (defvar new-project (f-expand "new-project" temporary-file-directory))
