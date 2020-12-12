@@ -7,8 +7,8 @@
 
 (load (f-expand "pipenv.el" default-directory))
 
-(setq existing-project (f-expand "existing-project" default-directory))
-(setq new-project (f-expand "new-project" temporary-file-directory))
+(defvar existing-project (f-expand "existing-project" default-directory))
+(defvar new-project (f-expand "new-project" temporary-file-directory))
 
 (ert-deftest test-pipenv--clean-response ()
   (let ((response "example/response\n")
